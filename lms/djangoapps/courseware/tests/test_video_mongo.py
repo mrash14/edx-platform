@@ -1144,6 +1144,43 @@ class TestVideoDescriptorInitialization(BaseTestXmodule):
             context = self.item_descriptor.get_context()
             self.assertEqual(context['transcripts_basic_tab_metadata']['video_url']['value'], video_url)
 
+    @ddt.data(
+        (
+            {
+                'desktop_webm': 'https://webm.com/dw.webm',
+                'hls': 'https://hls.com/hls.m3u8',
+                'youtube': '0rUwgOZ4LUg',
+                'desktop_mp4': 'https://mp4.com/dm.mp4'
+            },
+            ['https://www.youtube.com/watch?v=0rUwgOZ4LUg']
+        ),
+        (
+            {
+                'desktop_webm': 'https://webm.com/dw.webm',
+                'hls': 'https://hls.com/hls.m3u8',
+                'youtube': None,
+                'desktop_mp4': 'https://mp4.com/dm.mp4'
+            },
+            ['https://www.youtube.com/watch?v=v0TFmdO4ZP0']
+        ),
+    )
+    @ddt.unpack
+    @patch('xmodule.video_module.video_module.HLSPlaybackEnabledFlag.feature_enabled', Mock(return_value=True))
+    def test_val_encoding_in_context_with_external_youtube_source(self, val_video_encodings, video_url):
+        """
+        Tests that the val encodings correctly override the video url in a scenerio where:
+        1- external youtube source is provided
+        2- edx video id is set
+        3- one or more encodings are present.
+        """
+        with patch('xmodule.video_module.video_module.edxval_api.get_urls_for_profiles') as get_urls_for_profiles:
+            get_urls_for_profiles.return_value = val_video_encodings
+            self.initialize_module(
+                data='<video display_name="Video" youtube_id_1_0="v0TFmdO4ZP0" download_video="true" edx_video_id="12345-67890">[]</video>'
+            )
+            context = self.item_descriptor.get_context()
+        self.assertEqual(context['transcripts_basic_tab_metadata']['video_url']['value'], video_url)
+
 
 @attr(shard=1)
 @ddt.ddt
