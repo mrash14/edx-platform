@@ -796,9 +796,9 @@ class CertificatesViewsTests(CommonCertificatesTestCase):
 
     @override_settings(FEATURES=FEATURES_WITH_CERTS_ENABLED)
     @ddt.data(
-        (datetime.datetime.now() - datetime.timedelta(days=1), True),
-        (datetime.datetime.today() - datetime.timedelta(days=1), False),
-        (datetime.datetime.today() + datetime.timedelta(days=10), False)
+        (datetime.datetime.utcnow() - datetime.timedelta(days=1), True),
+        (datetime.datetime.utcnow() - datetime.timedelta(days=1), False),
+        (datetime.datetime.utcnow() + datetime.timedelta(days=10), False)
     )
     @ddt.unpack
     def test_html_view_certificate_availability_date_for_instructor_paced_courses(self, cert_avail_date, is_self_paced):
@@ -815,7 +815,7 @@ class CertificatesViewsTests(CommonCertificatesTestCase):
             course_id=unicode(self.course.id)
         )
 
-        today = datetime.datetime.utcnow().date()
+        today = datetime.datetime.utcnow()
         if is_self_paced or cert_avail_date > today:
             expected_date = today
         else:

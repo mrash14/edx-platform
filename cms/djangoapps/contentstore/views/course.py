@@ -831,9 +831,9 @@ def create_new_course(user, org, number, run, fields):
         raise ValidationError(_('You must link this course to an organization in order to continue. Organization '
                                 'you selected does not exist in the system, you will need to add it to the system'))
     store_for_new_course = modulestore().default_modulestore.get_modulestore_type()
-    new_course = create_new_course_in_store(store_for_new_course, user, org, number, run, fields)
-    add_organization_course(org_data, new_course.id)
-    return new_course
+    course_run = create_new_course_in_store(store_for_new_course, user, org, number, run, fields)
+    add_organization_course(org_data, course_run.id)
+    return course_run
 
 
 def create_new_course_in_store(store, user, org, number, run, fields):
