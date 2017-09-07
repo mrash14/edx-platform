@@ -420,7 +420,7 @@ function($, Backbone, _, gettext, moment, HtmlUtils, StringUtils, TranscriptSett
                 preferred_languages: self.selectedLanguages,
                 global: false   // Do not trigger global AJAX error handler
             }, function(data) {
-                if (data.transcript_preferences) {
+                if (data) {
                     $messageWrapperEl.removeClass('error');
                     $messageWrapperEl.addClass('success');
                     HtmlUtils.setHtml(

@@ -30,6 +30,7 @@ from edxval.api import (
     get_3rd_party_transcription_plans,
     get_transcript_preferences,
     create_or_update_transcript_preferences,
+    remove_transcript_preferences,
 )
 from opaque_keys.edx.keys import CourseKey
 from openedx.core.djangoapps.waffle_utils import WaffleSwitchNamespace
@@ -339,10 +340,11 @@ def transcript_preferences_handler(request, course_key_string):
     Returns: valid json response or 400 with error message
     """
     data = request.json
-    provider = data.get('provider', '')
+    provider = data.get('provider', None)
 
-    # TODO: if provider == '': delete course preferences
-    # i.e call delete api end point like delete_transcript_preferences(course_key_string)
+    if not provider:
+        remove_transcript_preferences(course_key_string)
+        return JsonResponse({'transcript_preferences': None}, status=200)
 
     error, preferences = validate_transcript_preferences(
         provider=provider,
