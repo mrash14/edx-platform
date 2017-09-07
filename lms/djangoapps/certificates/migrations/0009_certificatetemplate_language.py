@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='certificatetemplate',
             name='language',
-            field=models.CharField(blank=True, max_length=2, null=True, help_text='Optional. Only certificates for courses in the selected language will be rendered using this template.<br />*Note* Course languages are determined by the first two letters of the language code.', choices=[(b'en', 'English'), (b'es', 'Espa\xf1ol')]),
+            field=models.CharField(blank=True, max_length=2, null=True, help_text='Optional. Only certificates for courses in the selected language will be rendered using this template.<br />Add more language options in certificates/settings.py <br />*Note* Course languages are determined by the first two letters of the language code.', choices=[(b'en', 'English'), (b'es', 'Espa\xf1ol')]),
         ),
     ]
