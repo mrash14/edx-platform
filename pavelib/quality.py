@@ -349,13 +349,20 @@ def run_stylelint(options):
     violations_limit = int(getattr(options, 'limit', -1))
 
     sh(
-        "stylelint **/*.scss | tee {stylelint_report}".format(
+        "stylelint **/*.scss --custom-formatter=node_modules/stylelint-formatter-pretty | tee {stylelint_report}".format(
             stylelint_report=stylelint_report
         ),
         ignore_error=True
     )
 
-    num_violations = _get_stylelint_error_count(stylelint_report)
+    try:
+        num_violations = int(_get_count_from_last_line(stylelint_report, "eslint"))
+    except TypeError:
+        raise BuildFailure(
+            "Error. Number of eslint violations could not be found in {eslint_report}".format(
+                eslint_report=stylelint_report
+            )
+        )
 
     # Record the metric
     _write_metric(num_violations, (Env.METRICS_DIR / "stylelint"))
