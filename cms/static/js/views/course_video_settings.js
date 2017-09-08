@@ -339,15 +339,17 @@ function($, Backbone, _, gettext, moment, HtmlUtils, StringUtils, TranscriptSett
         updateResponseStatus: function(responseText, type) {
             var addClass = type === 'error' ? 'error' : 'success',
                 removeClass = type === 'error' ? 'success' : 'error',
+                iconClass = type === 'error' ? 'fa-info-circle' : 'fa-check-circle',
                 $messageWrapperEl = this.$el.find('.course-video-settings-message-wrapper');
             $messageWrapperEl.removeClass(removeClass);
             $messageWrapperEl.addClass(addClass);
             HtmlUtils.setHtml(
                 $messageWrapperEl,
                 HtmlUtils.interpolateHtml(
-                    HtmlUtils.HTML('<div class="course-video-settings-message"><span class="icon fa fa-check-circle" aria-hidden="true"></span><span>{text}</span></div>'), // eslint-disable-line max-len
+                    HtmlUtils.HTML('<div class="course-video-settings-message"><span class="icon fa {iconClass}" aria-hidden="true"></span><span>{text}</span></div>'), // eslint-disable-line max-len
                     {
-                        text: responseText
+                        text: responseText,
+                        iconClass: iconClass
                     }
                 )
             );
