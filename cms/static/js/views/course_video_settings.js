@@ -336,6 +336,23 @@ function($, Backbone, _, gettext, moment, HtmlUtils, StringUtils, TranscriptSett
             );
         },
 
+        updateResponseStatus: function(responseText, type) {
+            var addClass = type === 'error' ? 'error' : 'success',
+                removeClass = type === 'error' ? 'success' : 'error',
+                $messageWrapperEl = this.$el.find('.course-video-settings-message-wrapper');
+            $messageWrapperEl.removeClass(removeClass);
+            $messageWrapperEl.addClass(addClass);
+            HtmlUtils.setHtml(
+                $messageWrapperEl,
+                HtmlUtils.interpolateHtml(
+                    HtmlUtils.HTML('<div class="course-video-settings-message"><span class="icon fa fa-check-circle" aria-hidden="true"></span><span>{text}</span></div>'), // eslint-disable-line max-len
+                    {
+                        text: responseText
+                    }
+                )
+            );
+        },
+
         clearResponseStatus: function() {
             // Remove parent level state.
             var $messageWrapperEl = this.$el.find('.course-video-settings-message-wrapper');
@@ -406,60 +423,63 @@ function($, Backbone, _, gettext, moment, HtmlUtils, StringUtils, TranscriptSett
         },
 
         saveTranscriptPreferences: function() {
-            var self = this,
-                $messageWrapperEl = self.$el.find('.course-video-settings-message-wrapper');
-
+            var self = this;
             // First clear response status if present already
             this.clearResponseStatus();
 
-            $.postJSON(this.transcriptHandlerUrl, {
-                provider: self.selectedProvider,
-                cielo24_fidelity: self.selectedFidelityPlan,
-                cielo24_turnaround: self.selectedProvider === CIELO24 ? self.selectedTurnaroundPlan : '',
-                three_play_turnaround: self.selectedProvider === THREE_PLAY_MEDIA ? self.selectedTurnaroundPlan : '',
-                preferred_languages: self.selectedLanguages,
-                global: false   // Do not trigger global AJAX error handler
-            }, function(data) {
-                if (data) {
-                    $messageWrapperEl.removeClass('error');
-                    $messageWrapperEl.addClass('success');
-                    HtmlUtils.setHtml(
-                        $messageWrapperEl,
-                        HtmlUtils.interpolateHtml(
-                            HtmlUtils.HTML('<div class="course-video-settings-message"><span class="icon fa fa-check-circle" aria-hidden="true"></span><span>{text}</span></div>'), // eslint-disable-line max-len
-                            {
-                                text: gettext('Settings updated')
-                            }
-                        )
-                    );
-                    self.activeTranscriptionPlan = data.transcript_preferences;
+            if (self.selectedProvider) {
+                $.postJSON(self.transcriptHandlerUrl, {
+                    provider: self.selectedProvider,
+                    cielo24_fidelity: self.selectedFidelityPlan,
+                    cielo24_turnaround: self.selectedProvider === CIELO24 ? self.selectedTurnaroundPlan : '',
+                    three_play_turnaround: self.selectedProvider === THREE_PLAY_MEDIA ? self.selectedTurnaroundPlan : '',   // eslint-disable-line max-len
+                    preferred_languages: self.selectedLanguages,
+                    global: false   // Do not trigger global AJAX error handler
+                }, function(data) {
+                    if (data) {
+                        self.updateResponseStatus(gettext('Settings updated'), 'success');
+                        self.activeTranscriptionPlan = data.transcript_preferences;
 
+                        // Sync ActiveUploadListView with latest active plan.
+                        Backbone.trigger(
+                            'coursevideosettings:syncActiveTranscriptPreferences',
+                            self.activeTranscriptionPlan
+                        );
+                    }
+                }).fail(function(jqXHR) {
+                    var errorMessage;
+                    if (jqXHR.responseText) {
+                        // Enclose inside try-catch so that if we get erroneous data, we could still
+                        // show some error to user
+                        try {
+                            errorMessage = $.parseJSON(jqXHR.responseText).error;
+                        } catch (e) {}  // eslint-disable-line no-empty
+                        errorMessage = errorMessage || gettext('Error saving data');
+                        self.updateResponseStatus(errorMessage, 'error');
+                    }
+                });
+            } else {
+                $.ajax({
+                    type: 'DELETE',
+                    url: self.transcriptHandlerUrl
+                }).done(function() {
+                    self.updateResponseStatus(gettext('Settings updated'), 'success');
+                    self.activeTranscriptionPlan = null;
                     // Sync ActiveUploadListView with latest active plan.
-                    Backbone.trigger(
-                        'coursevideosettings:syncActiveTranscriptPreferences',
-                        self.activeTranscriptionPlan
-                    );
-                }
-            }).fail(function(jqXHR) {
-                var errorMessage;
-                if (jqXHR.responseText) {
-                    // Enclose inside try-catch so that if we get erroneous data, we could still show some error to user
-                    try {
-                        errorMessage = $.parseJSON(jqXHR.responseText).error;
-                    } catch (e) {}  // eslint-disable-line no-empty
-                    $messageWrapperEl.removeClass('success');
-                    $messageWrapperEl.addClass('error');
-                    HtmlUtils.setHtml(
-                        $messageWrapperEl,
-                        HtmlUtils.interpolateHtml(
-                            HtmlUtils.HTML('<div class="course-video-settings-message"><span class="icon fa fa-info-circle" aria-hidden="true"></span><span>{text}</span></div>'),    // eslint-disable-line max-len
-                            {
-                                text: errorMessage || gettext('Error saving data')
-                            }
-                        )
-                    );
-                }
-            });
+                    Backbone.trigger('coursevideosettings:syncActiveTranscriptPreferences', null);
+                }).fail(function(jqXHR) {
+                    var errorMessage;
+                    if (jqXHR.responseText) {
+                        // Enclose inside try-catch so that if we get erroneous data, we could still show some
+                        // error to user
+                        try {
+                            errorMessage = $.parseJSON(jqXHR.responseText).error;
+                        } catch (e) {}  // eslint-disable-line no-empty
+                        errorMessage = errorMessage || gettext('Error saving data');
+                        self.updateResponseStatus(errorMessage, 'error');
+                    }
+                });
+            }
         },
 
         updateCourseVideoSettings: function() {

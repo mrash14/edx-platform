@@ -869,6 +869,16 @@ class TranscriptPreferencesTestCase(VideoUploadTestBase, CourseTestCase):
     @ddt.data(
         # Error cases
         (
+            {},
+            'Invalid provider.'
+        ),
+        (
+            {
+                'provider': ''
+            },
+            'Invalid provider.'
+        ),
+        (
             {
                 'provider': 'dummy-provider'
             },
@@ -973,55 +983,45 @@ class TranscriptPreferencesTestCase(VideoUploadTestBase, CourseTestCase):
             self.assertEqual(status_code, 200)
             self.assertTrue(response['transcript_preferences'], preferences_data)
 
-    @ddt.data({}, {'provider': ''})
-    def test_remove_transcript_preferences(self, request_data):
+    def test_remove_transcript_preferences(self):
         """
         Test that transcript handler removes transcript preferences correctly.
         """
         # First add course wide transcript preferences.
-        preferences = create_or_update_transcript_preferences(unicode(self.course.id), **{
-            'provider': TranscriptProvider.CIELO24,
-            'cielo24_fidelity': 'PROFESSIONAL',
-            'cielo24_turnaround': 'STANDARD',
-            'preferred_languages': ['en']
-        })
+        preferences = create_or_update_transcript_preferences(unicode(self.course.id))
 
         # Verify transcript preferences exist
         self.assertIsNotNone(preferences)
 
-        response = self.client.post(
+        response = self.client.delete(
             self.get_url_for_course_key(self.course.id),
-            json.dumps(request_data),
             content_type='application/json'
         )
-        self.assertEqual(response.status_code, 200)
-        response = json.loads(response.content)
+
+        self.assertEqual(response.status_code, 204)
 
         # Verify transcript preferences no loger exist
         preferences = get_transcript_preferences(unicode(self.course.id))
         self.assertIsNone(preferences)
-        self.assertIsNone(response['transcript_preferences'])
 
     def test_remove_transcript_preferences_not_found(self):
         """
         Test that transcript handler works correctly even when no preferences are found.
         """
+        course_id = 'dummy+course+id'
         # Verify transcript preferences do not exist
-        preferences = get_transcript_preferences(unicode(self.course.id))
+        preferences = get_transcript_preferences(course_id)
         self.assertIsNone(preferences)
 
-        response = self.client.post(
-            self.get_url_for_course_key(self.course.id),
-            json.dumps({'provider': ''}),
+        response = self.client.delete(
+            self.get_url_for_course_key(course_id),
             content_type='application/json'
         )
-        self.assertEqual(response.status_code, 200)
-        response = json.loads(response.content)
+        self.assertEqual(response.status_code, 204)
 
         # Verify transcript preferences do not exist
-        preferences = get_transcript_preferences(unicode(self.course.id))
+        preferences = get_transcript_preferences(course_id)
         self.assertIsNone(preferences)
-        self.assertIsNone(response['transcript_preferences'])
 
     @ddt.data(
         None,
