@@ -738,10 +738,7 @@ class VideoDescriptor(VideoFields, VideoTranscriptsMixin, VideoStudioViewHandler
                 source_url = self.create_youtube_url(val_video_encodings['youtube'])
 
             # If no youtube source is provided externally or in VAl, update source_url in order: hls > mp4 and webm
-            youtube_source_available = (source_url and
-                                        source_url != self.create_youtube_url(youtube_id_1_0['default_value']))
-
-            if not youtube_source_available:
+            if not source_url:
                 if val_video_encodings.get('hls'):
                     source_url = val_video_encodings['hls']
                 elif val_video_encodings.get('desktop_mp4'):
