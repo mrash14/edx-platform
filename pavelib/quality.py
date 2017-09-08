@@ -1,3 +1,5 @@
+# coding=utf-8
+
 """
 Check code quality using pep8, pylint, and diff_quality.
 """
@@ -310,6 +312,58 @@ def run_eslint(options):
     if num_violations > violations_limit > -1:
         raise BuildFailure(
             "ESLint Failed. Too many violations ({count}).\nThe limit is {violations_limit}.".format(
+                count=num_violations, violations_limit=violations_limit
+            )
+        )
+
+
+def _get_stylelint_error_count(filename):
+    """
+    This returns the number of failures in a stylelint report.
+
+    Arguments:
+        filename: The name of the stylelint report.
+
+    Returns:
+        The number of failures as an integer.
+    """
+    # TODO: implement this!!!
+    return 1029
+
+
+@task
+@needs('pavelib.prereqs.install_node_prereqs')
+@cmdopts([
+    ("limit=", "l", "limit for number of acceptable violations"),
+])
+@timed
+def run_stylelint(options):
+    """
+    Runs stylelint on Sass files.
+    If limit option is passed, fails build if more violations than the limit are found.
+    """
+
+    stylelint_report_dir = (Env.REPORT_DIR / "stylelint")
+    stylelint_report = stylelint_report_dir / "stylelint.report"
+    _prepare_report_dir(stylelint_report_dir)
+    violations_limit = int(getattr(options, 'limit', -1))
+
+    sh(
+        "stylelint **/*.scss | tee {stylelint_report}".format(
+            stylelint_report=stylelint_report
+        ),
+        ignore_error=True
+    )
+
+    num_violations = _get_stylelint_error_count(stylelint_report)
+
+    # Record the metric
+    _write_metric(num_violations, (Env.METRICS_DIR / "stylelint"))
+
+    # Fail if number of violations is greater than the limit
+    if num_violations > violations_limit > -1:
+        raise BuildFailure(
+            "Stylelint Failed. Too many violations ({count}).\nThe limit is {violations_limit}.".format(
                 count=num_violations, violations_limit=violations_limit
             )
         )
@@ -688,6 +742,9 @@ def run_quality(options):
     eslint_files = get_violations_reports("eslint")
     eslint_reports = u' '.join(eslint_files)
 
+    scriptlint_files = get_violations_reports("scriptlint")
+    scriptlint_reports = u' '.join(scriptlint_files)
+
     pythonpath_prefix = (
         "PYTHONPATH=$PYTHONPATH:lms:lms/djangoapps:cms:cms/djangoapps:"
         "common:common/djangoapps:common/lib"
@@ -709,6 +766,17 @@ def run_quality(options):
             violations_type="eslint",
             prefix=pythonpath_prefix,
             reports=eslint_reports,
+            percentage_string=percentage_string,
+            branch_string=compare_branch_string,
+            dquality_dir=dquality_dir
+    ):
+        diff_quality_percentage_pass = False
+
+    # run diff-quality for scriptlint.
+    if not run_diff_quality(
+            violations_type="scriptlint",
+            prefix=pythonpath_prefix,
+            reports=scriptlint_reports,
             percentage_string=percentage_string,
             branch_string=compare_branch_string,
             dquality_dir=dquality_dir

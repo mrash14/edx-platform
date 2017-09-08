@@ -59,6 +59,7 @@
     "plato": "1.2.2",
     "selenium-webdriver": "3.4.0",
     "sinon": "2.3.5",
-    "squirejs": "^0.1.0"
+    "squirejs": "^0.1.0",
+    "stylelint-config-edx": "git+https://github.com/edx/stylelint-config-edx.git#5414c1362c5a2c4c1d715a97b0d264074ec2b57d"
   }
 }
