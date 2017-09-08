@@ -3,6 +3,7 @@ django admin pages for certificates models
 """
 from config_models.admin import ConfigurationModelAdmin
 from django import forms
+from django.conf import settings
 from django.contrib import admin
 
 from certificates.models import (
@@ -27,6 +28,11 @@ class CertificateTemplateForm(forms.ModelForm):
         org_choices.insert(0, ('', 'None'))
         self.fields['organization_id'] = forms.TypedChoiceField(
             choices=org_choices, required=False, coerce=int, empty_value=None
+        )
+        lang_choices = list(settings.CERTIFICATE_TEMPLATE_LANGUAGES)
+        lang_choices.insert(0, (None, '------------'))
+        self.fields['language'] = forms.TypedChoiceField(
+            choices=lang_choices, required=False, coerce=str, empty_value=None
         )
 
     class Meta(object):

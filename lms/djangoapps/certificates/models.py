@@ -65,7 +65,6 @@ from model_utils.models import TimeStampedModel
 from badges.events.course_complete import course_badge_check
 from badges.events.course_meta import completion_check, course_group_check
 from lms.djangoapps.instructor_task.models import InstructorTask
-from lms.djangoapps.certificates.settings import LANGUAGES
 from openedx.core.djangoapps.signals.signals import COURSE_CERT_AWARDED
 from openedx.core.djangoapps.xmodule_django.models import CourseKeyField, NoneToEmptyManager
 from util.milestones_helpers import fulfill_course_milestone, is_prerequisite_courses_enabled
@@ -1001,10 +1000,9 @@ class CertificateTemplate(TimeStampedModel):
     )
     language = models.CharField(
         max_length=2,
-        choices=LANGUAGES,
         blank=True,
         null=True,
-        help_text=_(u'Optional. Only certificates for courses in the selected language will be rendered using this template.<br />Add more language options in certificates/settings.py <br />*Note* Course languages are determined by the first two letters of the language code.')
+        help_text=u'Optional. Only certificates for courses in the selected language will be rendered using this template.<br />*Note* Course language is determined by the first two letters of the language code.'
     )
 
     def __unicode__(self):
