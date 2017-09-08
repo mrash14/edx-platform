@@ -46,8 +46,9 @@
         &:hover,
         &:focus,
         &.active {
-          color: $uxpl-blue-hover-active;
-          border-bottom-color: $uxpl-blue-hover-active;
+          color: rgba(0,117,180, 1);
+          border-bottom-color: rgba(0,117,180, 1);
+          background-color: transparent;
         }
       }
     }
