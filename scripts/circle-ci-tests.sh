@@ -65,8 +65,8 @@ else
             echo "Finding ESLint violations and storing report..."
             paver run_eslint -l $ESLINT_THRESHOLD > eslint.log || { cat eslint.log; EXIT=1; }
 
-            echo "Finding Scriptlint violations and storing report..."
-            paver run_scriptlint -l $SCRIPTLINT_THRESHOLD > scriptlint.log || { cat scriptlint.log; EXIT=1; }
+            echo "Finding Stylelint violations and storing report..."
+            paver run_stylelint -l $STYLELINT_THRESHOLD > stylelint.log || { cat stylelint.log; EXIT=1; }
 
             # Run quality task. Pass in the 'fail-under' percentage to diff-quality
             paver run_quality -p 100 || EXIT=1

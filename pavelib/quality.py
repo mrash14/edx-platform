@@ -749,8 +749,8 @@ def run_quality(options):
     eslint_files = get_violations_reports("eslint")
     eslint_reports = u' '.join(eslint_files)
 
-    scriptlint_files = get_violations_reports("scriptlint")
-    scriptlint_reports = u' '.join(scriptlint_files)
+    stylelint_files = get_violations_reports("stylelint")
+    stylelint_reports = u' '.join(stylelint_files)
 
     pythonpath_prefix = (
         "PYTHONPATH=$PYTHONPATH:lms:lms/djangoapps:cms:cms/djangoapps:"
@@ -779,11 +779,11 @@ def run_quality(options):
     ):
         diff_quality_percentage_pass = False
 
-    # run diff-quality for scriptlint.
+    # run diff-quality for stylelint.
     if not run_diff_quality(
-            violations_type="scriptlint",
+            violations_type="stylelint",
             prefix=pythonpath_prefix,
-            reports=scriptlint_reports,
+            reports=stylelint_reports,
             percentage_string=percentage_string,
             branch_string=compare_branch_string,
             dquality_dir=dquality_dir
