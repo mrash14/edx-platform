@@ -579,7 +579,7 @@ def _get_count_from_last_line(filename, file_type):
     This will return the number in the last line of a file.
     It is returning only the value (as a floating number).
     """
-    last_line = _get_report_contents(filename, last_line_only=True)
+    last_line = _get_report_contents(filename, last_line_only=True).strip()
     if file_type is "python_complexity":
         # Example of the last line of a complexity report: "Average complexity: A (1.93953443446)"
         regex = r'\d+.\d+'
